@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html ng-app="sampleApp">
+
+<head>
+    <title>BBDO Atl mobile demos</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+
+    <!-- Firebase -->
+    <script src="https://cdn.firebase.com/js/client/2.2.2/firebase.js"></script>
+
+    <!-- AngularFire -->
+    <script src="https://cdn.firebase.com/libs/angularfire/1.0.0/angularfire.min.js"></script>
+
+    <style type="text/css">
+        .btn {
+            border: 0px;
+            padding: 75px 0px;
+            border-radius: 0px;
+            margin-bottom: 25px;
+            width: 320px;
+            height: 200px;
+            vertical-align: middle;
+            font-size: 36px;
+        }
+    </style>
+</head>
+
+<body ng-controller="SampleCtrl">
+
+    <ul class="inline">
+        <li>x: {{deviceX}}</li>
+        <li>y: {{deviceY}}</li>
+        <li>z: {{deviceZ}}</li>
+        <li> <a href="#" class="btn btn-warning" ng-click="changeSite('http://bbdo.firebaseapp.com/sphere.html')">Sphere</a>
+        </li>
+        <li> <a href="#" class="btn btn-success" ng-click="changeSite('http://bbdo.firebaseapp.com/floor.html')">Floor</a>
+        </li>
+        <li> <a href="#" class="btn btn-primary" ng-click="changeSite('http://bbdo.firebaseapp.com/maze.html')">Maze</a>
+        </li>
+    </ul>
+
+    <script type="text/javascript">
+        var app = angular.module("sampleApp", ["firebase"]);
+
+        app.controller("SampleCtrl", function ($scope, $firebaseObject) {
+
+            $scope.deviceX = "x";
+            $scope.deviceY = "y";
+            $scope.deviceZ = "z";
+                   // Method for changing the page remotely
+            $scope.changeSite = function(url) {
+                console.log("changeSite called to url: " + url);
+                siteRef.set({location: url, change: true});
+            };
+
+            // Initialize Firebase
+            var ref = new Firebase("https://bbdo.firebaseio.com/three/");
+            var siteRef = new Firebase("https://bbdo.firebaseio.com/site/");
+
+            // Register event for orientation change
+            if (window.DeviceOrientationEvent) {
+                window.addEventListener("deviceorientation", function orientation(event) {
+
+                    $scope.$apply(function () {
+                        $scope.deviceX = String(Math.round(event.alpha));
+                    });
+                    $scope.$apply(function () {
+                        $scope.deviceY = String(Math.round(event.beta));
+                    });
+                    $scope.$apply(function () {
+                        $scope.deviceZ = String(Math.round(event.gamma));
+                    });
+
+                    console.log("Magnetometer: " + event.alpha + ", " + event.beta + ", " + event.gamma);
+
+                    ref.set({
+                        x: event.alpha,
+                        y: event.beta,
+                        z: event.gamma
+                    });
+                }, false);
+            } else {
+                console.log("DeviceOrientationEvent is not supported");
+            }
+        });
+    </script>
+</body>
+
+</html>
